@@ -1,4 +1,4 @@
-package com.northmore.user;
+package com.revature.user;
 
 public class Employee {
 
