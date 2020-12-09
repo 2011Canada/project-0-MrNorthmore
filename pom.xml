@@ -5,4 +5,13 @@
   <version>0.0.1</version>
   <name>BankApplication</name>
   <description>This is a java console banking application for revature's project 0</description>
+	
+  <dependencies>
+  	<dependency>
+  	  <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.11.2</version>
+  	</dependency>
+  </dependencies>
+
 </project>
