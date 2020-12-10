@@ -9,6 +9,7 @@ import java.util.List;
 
 public class BankMenu implements Displayable {
 	
+	
 	BankService bs;
 	UserService us;
 	
@@ -26,15 +27,24 @@ public class BankMenu implements Displayable {
 		System.out.println("Welcome to Northmore Financial.");
 		System.out.println("-------------------------------");
 		System.out.println("Please select one of the following options to get started.");
-		System.out.println("1. Login using an existging account");
+		System.out.println("1. Login using existing customer account");
 		System.out.println("2. Create a new account");
+		System.out.println("3. Login as an employee");
+		System.out.println("4. Exit");
 		String entryChoice = this.userInput.nextLine();
+		int choice = Integer.parseInt(entryChoice);
 		
-		if(Integer.parseInt(entryChoice) == 1) {
+		if(choice == 1) {
 			this.loginMenu();
-		} else if(Integer.parseInt(entryChoice) == 2) {
+		} else if(choice == 2) {
 			this.createAccountMenu();
-		} else {
+		} else if(choice == 3) {
+			
+		} else if(choice == 4) {
+			System.exit(0);
+		}
+		
+		else {
 			System.out.println("Please select a valid option.");
 			this.displayMenu();
 		}
@@ -82,6 +92,10 @@ public class BankMenu implements Displayable {
 			this.depositMenu();
 		} else if(integerChoice == 4) {
 			// User wants to withdraw money from account
+			this.withdrawlMenu();
+		} else if(integerChoice == 5) {
+			// User wants to withdraw money from account
+			return;
 		}
 	}
 	
@@ -97,6 +111,7 @@ public class BankMenu implements Displayable {
 	public void balancesMenu() {
 		System.out.println("Welcome to balances menu");
 		System.out.println("------------------------");
+		System.out.println("Accounts/Balances: ");
 	}
 	
 	public void depositMenu() {
@@ -112,6 +127,16 @@ public class BankMenu implements Displayable {
 	public void applyForAccountMenu() {
 		System.out.println("Welcome to the account application menu");
 		System.out.println("------------------------");
+	}
+	
+	public void employeeLoginMenu() {
+		System.out.println("Employee Login Menu");
+		System.out.println("------------------------");
+		System.out.println("Employee Number: ");
+		String employeeInput = this.userInput.nextLine();
+		System.out.println("Password: ");
+		String passwordInput = this.userInput.nextLine();
+		
 	}
 
 	public String display() {
