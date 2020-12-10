@@ -23,6 +23,12 @@ public class UserService implements IUserService {
 	public void logout() {
 		return;
 	}
+
+	public void createAccount() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	
 	
 	

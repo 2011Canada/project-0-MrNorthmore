@@ -22,7 +22,7 @@ public class BankMenu implements Displayable {
 	}
 	
 	
-	public void displayMenuHeader() {
+	public void displayMenu() {
 		System.out.println("Welcome to Northmore Financial.");
 		System.out.println("-------------------------------");
 		System.out.println("Please select one of the following options to get started.");
@@ -36,7 +36,7 @@ public class BankMenu implements Displayable {
 			this.createAccountMenu();
 		} else {
 			System.out.println("Please select a valid option.");
-			this.displayMenuHeader();
+			this.displayMenu();
 		}
 	}
 	
@@ -65,50 +65,54 @@ public class BankMenu implements Displayable {
 		System.out.println("2. View Balance");
 		System.out.println("3. Deposit");
 		System.out.println("4. Withdrawl");
+		System.out.println("5. Exit");
 		String userChoice = this.userInput.nextLine();
 		int integerChoice = Integer.parseInt(userChoice);
-		if(integerChoice < 1 || integerChoice > 4) {
+		if(integerChoice < 1 || integerChoice > 5) {
 			System.out.println("Invalid. Please select a valid option");
 			this.displayMainMenu();
 		} else if(integerChoice == 1) {
 			// User wants to apply for a new account
+			this.applyForAccountMenu();
 		} else if(integerChoice == 2) {
 			// User wants to view balances of accounts
+			this.balancesMenu();
 		} else if(integerChoice == 3) {
 			// User wants to deposit money into account
+			this.depositMenu();
 		} else if(integerChoice == 4) {
 			// User wants to withdraw money from account
 		}
 	}
 	
-	
 	public void createAccountMenu() {
-		
+		System.out.println("Create an Account");
+		System.out.println("Please enter username: ");
+		String usernameInput = this.userInput.nextLine();
+		System.out.println("Please enter a password: ");
+		String passwordInput = this.userInput.nextLine();
+		this.us.createAccount();
 	}
 	
-	/*
-	 * This handleUserInput method gets the next line of user input, checks for
-	 * a number out of bounds or a catches an exception if a non-integer value is entered
-	 * 
-	 * @return
-	 * 			void
-	 */
-//	public void handleUserInput() {
-//		String input = this.userInput.nextLine();
-//		
-//		try {
-//			int numericalInput = Integer.parseInt(input);
-//			if(numericalInput < 0 || numericalInput >= lines.size()) {
-//				System.out.println("Sorry, please choose a valid option");
-//				return;
-//			}
-//		} catch(NumberFormatException e) {
-//			System.out.println("Sorry, please choose a valid option");
-//		}
-//		
-//		
-//	}
-
+	public void balancesMenu() {
+		System.out.println("Welcome to balances menu");
+		System.out.println("------------------------");
+	}
+	
+	public void depositMenu() {
+		System.out.println("Welcome to the deposit menu");
+		System.out.println("------------------------");
+	}
+	
+	public void withdrawlMenu() {
+		System.out.println("Welcome to the withdrawl menu");
+		System.out.println("------------------------");
+	}
+	
+	public void applyForAccountMenu() {
+		System.out.println("Welcome to the account application menu");
+		System.out.println("------------------------");
+	}
 
 	public String display() {
 		// TODO Auto-generated method stub

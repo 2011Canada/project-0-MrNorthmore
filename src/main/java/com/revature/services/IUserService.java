@@ -4,5 +4,5 @@ public interface IUserService {
 	
 	public boolean login(String username, String password);
 	public void logout();
-
+	public void createAccount();
 }

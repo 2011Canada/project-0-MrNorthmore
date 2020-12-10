@@ -25,7 +25,7 @@ public class BankLauncher {
 		bankLogger.info("Starting menu application");
 		
 		while(true) {
-			bm.displayMenuHeader();
+			bm.displayMenu();
 		}
 	}
 	
