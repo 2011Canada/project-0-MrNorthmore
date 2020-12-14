@@ -10,10 +10,12 @@ public interface IBankDAO {
 	
 	// Here we define the behavior that our data access needs to implement
 	
-	public Account createOne();
+	public Account createOne(User user, Double initialBalance);
 	
-	public List<Account> getAllUserAccounts();
+	public List<Account> getAllUserAccounts(User user);
 	
 	public User getOne();
+	
+	public Account updateBalance(Account account, Double amount);
 
 }
