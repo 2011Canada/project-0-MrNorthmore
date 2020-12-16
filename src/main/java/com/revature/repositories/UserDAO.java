@@ -55,9 +55,9 @@ public class UserDAO implements IUserDAO {
 		}
 	}
 
-	public User findOneUser(String username, String password) throws InternalErrorException, UserNotFoundException {
+	public User findOneUser(String username, String password) throws UserNotFoundException {
 		Connection conn = this.cf.getConnection();
-
+		User user = null;
 		try {
 
 			String sql = "select * from users where \"username\" = ? and \"password\" = ?;";
@@ -69,19 +69,15 @@ public class UserDAO implements IUserDAO {
 			ResultSet res = findUser.executeQuery();
 
 			if (res.next()) {
-				User user = new User();
+				user = new User();
 				user.setUserId(res.getInt("user_id"));
 				user.setUsername(username);
 				user.setPassword(password);
-				return user;
-			} else {
-				throw new UserNotFoundException();
 			}
-
 		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new InternalErrorException();
+			throw new UserNotFoundException();
 		}
+		return user;
 	}
 
 	public List<User> findAll() {
@@ -108,9 +104,10 @@ public class UserDAO implements IUserDAO {
 		return allUsers;
 	}
 
-	public Employee findEmployee(String username, String password) {
+	public Employee findEmployee(String username, String password) throws EmployeeNotFoundException {
 		Connection conn = this.cf.getConnection();
-
+		Employee em = null;
+		
 		try {
 
 			// Create our SQL string with ? placeholder values
@@ -127,23 +124,38 @@ public class UserDAO implements IUserDAO {
 			ResultSet res = insertUser.executeQuery();
 
 			if (res.next()) {
-				Employee em = new Employee();
+				em = new Employee();
 				em.setUserId(res.getInt("user_id"));
 				em.setUsername(res.getString("username"));
 				em.setPassword(res.getString("password"));
 				em.setEmployeeNum(res.getInt("employee_id"));
-				System.out.println(em.getEmployeeNum());
-				return em;
-			} else {
-				throw new EmployeeNotFoundException();
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (EmployeeNotFoundException e) {
-			e.printStackTrace();
+			throw new EmployeeNotFoundException();
 		}
 
-		return null;
+		return em;
+	}
+	
+	public User getOneUserByUsername(String username) {
+		Connection conn = this.cf.getConnection();
+		User foundUser = null;
+		try {
+			String sql = "select * from users where \"username\" = ?;";
+			PreparedStatement selectUsers = conn.prepareStatement(sql);
+			selectUsers.setString(1, username);
+			ResultSet res = selectUsers.executeQuery();
+			
+			if(res.next()) {
+				foundUser = new User();
+				foundUser.setUsername(res.getString("username"));
+				foundUser.setUserId(res.getInt("user_id"));
+				foundUser.setPassword(res.getString("password"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return foundUser;
 	}
 }

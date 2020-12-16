@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.revature.models.Account;
 import com.revature.models.Transaction;
+import com.revature.models.Transfer;
 import com.revature.models.User;
 import com.revature.repositories.BankDAO;
 
@@ -26,15 +27,15 @@ public class BankService implements IBankService {
 		return;
 	}
 
-	public void deposit(Account account, Double depositAmount) {
-		Double newBalance = account.getBalance() + depositAmount;
-		this.bd.updateBalance(account, newBalance);
-	}
-
-	public void withdraw(Account account, Double withdrawAmount) {
-		Double newBalance = account.getBalance() - withdrawAmount;
-		this.bd.updateBalance(account, newBalance);
-		return;
+	public void depositOrWithdraw(Account account, Double amount, String operation) {
+		if(operation.equals("deposit")) {
+			Double newBalance = account.getBalance() + amount;
+			this.bd.updateBalance(account, newBalance, operation, amount);
+		} else if(operation.equals("withdraw")) {
+			Double newBalance = account.getBalance() - amount;
+			this.bd.updateBalance(account, newBalance, operation, amount);
+			return;
+		}
 		
 	}
 
@@ -60,6 +61,24 @@ public class BankService implements IBankService {
 		return transactionList;
 	}
 	
+	public void approveAccount(int accountNumber) {
+		this.bd.approveAccount(accountNumber);
+	}
+	
+	public void postTransfer(Account fromAccount, int toAccountNum, double amount) {
+		this.bd.insertTransfer(fromAccount, toAccountNum, amount);
+	}
+	
+	public List<Transfer> getTransfersToAccount(int accountNum) {
+		List<Transfer> transfers = this.bd.getIncomingTransfersByAccountNumber(accountNum);
+		return transfers;
+		
+	}
+	
+	public boolean acceptTransfer(Account account, Transfer transfer) {
+		boolean isTransferSuccessful = this.bd.acceptTransfer(account, transfer);
+		return isTransferSuccessful;
+	}
 	
 
 }

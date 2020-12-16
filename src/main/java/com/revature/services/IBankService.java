@@ -10,9 +10,7 @@ public interface IBankService {
 	
 	public void viewAccountBalance();
 	
-	public void deposit(Account account, Double depositAmount);
-	
-	public void withdraw(Account account, Double withdrawAmount);
+	public void depositOrWithdraw(Account account, Double amount, String operation);
 	
 	public List<Account> getAllUsersAccounts(User user);
 }

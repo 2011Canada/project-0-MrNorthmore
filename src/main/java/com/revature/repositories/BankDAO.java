@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.revature.models.Account;
 import com.revature.models.Transaction;
+import com.revature.models.Transfer;
 import com.revature.models.User;
 import com.revature.util.ConnectionFactory;
 
@@ -21,6 +22,8 @@ public class BankDAO implements IBankDAO {
 		Account newAccount = null;
 
 		try {
+			
+			conn.setAutoCommit(false);
 
 			// Create our SQL string with ? placeholder values
 			String sql = "insert into accounts (balance, user_id, account_approved)"
@@ -36,12 +39,32 @@ public class BankDAO implements IBankDAO {
 			ResultSet res = insertAccount.executeQuery();
 			
 			if(res.next()) {
-				System.out.println("Account has been created and pending approval.");
+				String transSQL = "insert into transactions (account_num, operation, date_time, amount)\n"
+						+ "	values (?, 'deposit', now(), ?) returning transaction_id;";
+				PreparedStatement insertTransaction = conn.prepareStatement(transSQL);
+				
+				insertTransaction.setInt(1, res.getInt("account_num"));
+				insertTransaction.setDouble(2, initialBalance);
+				
+				ResultSet transRes = insertTransaction.executeQuery();
+				
 			}
-			
-
 		} catch (SQLException e) {
 			e.printStackTrace();
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		} finally {
+			try {
+				conn.commit();
+				conn.setAutoCommit(true);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			cf.releaseConnection(conn);
 		}
 
 		return newAccount;
@@ -55,7 +78,7 @@ public class BankDAO implements IBankDAO {
 		try {
 
 			// Create our SQL string with ? placeholder values
-			String sql = "select * from accounts " + "where user_id = ?;";
+			String sql = "select * from accounts " + "where user_id = ? and account_approved = true;";
 
 			// Create a prepared statement to fill with user values
 			PreparedStatement insertUser = conn.prepareStatement(sql);
@@ -85,11 +108,13 @@ public class BankDAO implements IBankDAO {
 		return null;
 	}
 	
-	public Account updateBalance(Account account, Double amount) {
+	public Account updateBalance(Account account, Double amount, String operation, Double transAmt) {
 		Connection conn = this.cf.getConnection();
 		Account depositAccount = account;
 
 		try {
+			
+			conn.setAutoCommit(false);
 
 			// Create our SQL string with ? placeholder values
 			String sql = "update \"accounts\" as a set balance = ? where account_num = ? returning \"account_num\", \"balance\", \"user_id\", \"account_approved\";";
@@ -105,12 +130,41 @@ public class BankDAO implements IBankDAO {
 			
 			if(res.next()) {
 				depositAccount.setBalance(res.getDouble("balance"));
-				System.out.println("Your balance is now: " + res.getDouble("balance"));
+				
+				String tSql = "insert into transactions (account_num, operation, date_time, amount)\n"
+						+ "	values (?, ?, now(), ?) returning transaction_id;";
+				
+				PreparedStatement insertTrans = conn.prepareStatement(tSql);
+				
+				insertTrans.setInt(1, res.getInt("account_num"));
+				insertTrans.setString(2, operation);
+				insertTrans.setDouble(3, transAmt);
+				
+				ResultSet tRes = insertTrans.executeQuery();
+				
+				if(tRes.next()) {
+					System.out.println("Your balance is now: " + res.getDouble("balance"));
+				}
+				
 			}
 			
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		} finally {
+			try {
+				conn.commit();
+				conn.setAutoCommit(true);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			cf.releaseConnection(conn);
 		}
 
 		return depositAccount;
@@ -186,7 +240,208 @@ public class BankDAO implements IBankDAO {
 	}
 	
 	public void insertTransaction() {
+		// TODO
+	}
+	
+	public void approveAccount(int accountNum) {
+		Connection conn = this.cf.getConnection();
 		
+		try {
+			String sql = "update \"accounts\""
+					+ "	set account_approved = true"
+					+ "	where account_num = ?;";
+			
+			PreparedStatement updateAccount = conn.prepareStatement(sql);
+			
+			updateAccount.setInt(1, accountNum);
+			
+			updateAccount.executeUpdate();
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public List<Transfer> getIncomingTransfersByAccountNumber(int accountNum) {
+		
+		Connection conn = this.cf.getConnection();
+		List<Transfer> transferList = new ArrayList<Transfer>();
+		
+		try {
+			String sql = "select * from transfers\n"
+					+ "	where to_account = ?;";
+			
+			PreparedStatement getTransfers = conn.prepareStatement(sql);
+			
+			getTransfers.setInt(1, accountNum);
+			
+			ResultSet res = getTransfers.executeQuery();
+			
+			while(res.next()) {
+				Transfer t = new Transfer();
+				t.setAmount(res.getDouble("amount"));
+				t.setFromAccount(res.getInt("from_account"));
+				t.setToAccount(res.getInt("to_account"));
+				t.setTransferId(res.getInt("transfer_id"));
+				transferList.add(t);
+			}
+			
+			return transferList;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+		
+	}
+
+	public Transfer insertTransfer(Account fromAccount, int toAccountNum, Double amount) {
+		Connection conn = this.cf.getConnection();
+		Transfer t = null;
+		try {
+			
+			conn.setAutoCommit(false);
+			
+			String sql = "insert into transfers (from_account, to_account, amount)"
+					+ "	values (?, ?, ?) returning \"transfer_id\", \"from_account\",\"to_account\", \"amount\";";
+			
+			PreparedStatement newTransfer = conn.prepareStatement(sql);
+			
+			newTransfer.setInt(1, fromAccount.getAccountNumber());
+			newTransfer.setInt(2, toAccountNum);
+			newTransfer.setDouble(3, amount);
+			
+			ResultSet res = newTransfer.executeQuery();
+			
+			if(res.next()) {
+				t = new Transfer();
+				t.setFromAccount(res.getInt("from_account"));
+				t.setToAccount(res.getInt("to_account"));
+				t.setAmount(res.getDouble("amount"));
+				t.setTransferId(res.getInt("transfer_id"));
+				
+				
+				
+				String sql2 = "update \"accounts\" as a set balance = ? where account_num = ? returning \"account_num\", \"balance\", \"user_id\", \"account_approved\";";
+				
+				PreparedStatement updateBalance = conn.prepareStatement(sql2);
+				
+				Double newBalance = fromAccount.getBalance() - t.getAmount();
+				
+				updateBalance.setDouble(1, newBalance);
+				updateBalance.setInt(2, fromAccount.getAccountNumber());
+				
+				ResultSet balRes = updateBalance.executeQuery();
+				
+				if(balRes.next()) {
+					String tSql = "insert into transactions (account_num, operation, date_time, amount)\n"
+							+ "	values (?, ?, now(), ?) returning transaction_id;";
+					
+					PreparedStatement insertTrans = conn.prepareStatement(tSql);
+					
+					insertTrans.setInt(1, fromAccount.getAccountNumber());
+					insertTrans.setString(2, "withdraw");
+					insertTrans.setDouble(3, amount);
+					
+					ResultSet tRes = insertTrans.executeQuery();
+					
+				}
+				
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		} finally {
+			try {
+				conn.commit();
+				conn.setAutoCommit(true);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return t;
+	}
+	
+	public boolean acceptTransfer(Account account, Transfer transfer) {
+		
+		Connection conn = this.cf.getConnection();
+
+		try {
+			
+			conn.setAutoCommit(false);
+
+			// Create our SQL string with ? placeholder values
+			String sql = "update \"accounts\" as a set balance = ? where account_num = ? returning \"account_num\", \"balance\", \"user_id\", \"account_approved\";";
+
+			// Create a prepared statement to fill with user values
+			PreparedStatement updateAccount = conn.prepareStatement(sql);
+			
+			//Calculate new balance for query
+			Double newBalance = account.getBalance() + transfer.getAmount();
+			
+			// Insert user name and password values into the statement
+			updateAccount.setDouble(1, newBalance);
+			updateAccount.setInt(2, account.getAccountNumber());
+
+			ResultSet res = updateAccount.executeQuery();
+			
+			if(res.next()) {
+				
+				String tSql = "insert into transactions (account_num, operation, date_time, amount)\n"
+						+ "	values (?, ?, now(), ?) returning transaction_id;";
+				
+				PreparedStatement insertTrans = conn.prepareStatement(tSql);
+				
+				insertTrans.setInt(1, res.getInt("account_num"));
+				insertTrans.setString(2, "deposit");
+				insertTrans.setDouble(3, transfer.getAmount());
+				
+				ResultSet tRes = insertTrans.executeQuery();
+				
+				if(tRes.next()) {
+					String dSql = "delete from transfers\n"
+							+ "	where transfer_id = ?;";
+					
+					PreparedStatement delTrans = conn.prepareStatement(dSql);
+					
+					delTrans.setInt(1, transfer.getTransferId());
+					
+					delTrans.executeUpdate();
+					
+					System.out.println("Your balance is now: " + res.getDouble("balance"));
+				}
+				
+			}
+			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		} finally {
+			try {
+				conn.commit();
+				conn.setAutoCommit(true);
+				return true;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return false;
 	}
 
 }

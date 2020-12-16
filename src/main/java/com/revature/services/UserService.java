@@ -1,5 +1,6 @@
 package com.revature.services;
 
+import com.revature.exceptions.EmployeeNotFoundException;
 import com.revature.exceptions.InternalErrorException;
 import com.revature.exceptions.UnableToCreateUserException;
 import com.revature.exceptions.UserNotFoundException;
@@ -23,14 +24,11 @@ public class UserService implements IUserService {
 		User loggedInUser = null;
 		try {
 			loggedInUser = this.ud.findOneUser(username, password);
-			this.user = loggedInUser;
-		} catch (InternalErrorException e) {
-			e.printStackTrace();
 		} catch (UserNotFoundException e) {
 			e.printStackTrace();
 		}
-		
-		return this.user;
+		this.user = loggedInUser;
+		return loggedInUser;
 	}
 
 	public void logout() {
@@ -39,7 +37,12 @@ public class UserService implements IUserService {
 	
 	public Employee loginAsEmployee(String username, String password) {
 		Employee loggedInEmployee = null;
-		loggedInEmployee = this.ud.findEmployee(username, password);
+		try {
+			loggedInEmployee = this.ud.findEmployee(username, password);
+		} catch (EmployeeNotFoundException e) {
+			System.out.println("Employee was not found.");
+		}
+		
 		this.em = loggedInEmployee;
 		return loggedInEmployee;
 	}
@@ -70,5 +73,14 @@ public class UserService implements IUserService {
 	
 	public User getCurrentUser() {
 		return this.user;
+	}
+
+	public boolean isValidUsername(String username) {
+		User foundUser = this.ud.getOneUserByUsername(username);
+		if(foundUser == null) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

@@ -31,6 +31,7 @@ public class BankLauncher {
 		while(true) {
 			bm.displayMenu();
 		}
+		
 	}
 	
 	

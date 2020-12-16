@@ -16,6 +16,6 @@ public interface IBankDAO {
 	
 	public User getOne();
 	
-	public Account updateBalance(Account account, Double amount);
+	public Account updateBalance(Account account, Double amount, String operation, Double transAmt);
 
 }
