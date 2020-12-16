@@ -103,9 +103,34 @@ public class BankDAO implements IBankDAO {
 		return accountList;
 	}
 
-	public User getOne() {
-		// TODO Auto-generated method stub
-		return null;
+	public Account getOne(int accountNum) {
+		Connection conn = this.cf.getConnection();
+		Account a = null;
+		try {
+
+			// Create our SQL string with ? placeholder values
+			String sql = "select * from accounts " + "where account_num = ?;";
+
+			// Create a prepared statement to fill with user values
+			PreparedStatement insertUser = conn.prepareStatement(sql);
+
+			// Insert user name and password values into the statement
+			insertUser.setInt(1, accountNum);
+
+			ResultSet res = insertUser.executeQuery();
+
+			if (res.next()) {
+				a = new Account();
+				a.setAccountNumber(res.getInt("account_num"));
+				a.setAccountUser(res.getInt("user_id"));
+				a.setBalance(res.getDouble("balance"));
+				
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return a;
 	}
 	
 	public Account updateBalance(Account account, Double amount, String operation, Double transAmt) {
@@ -237,10 +262,6 @@ public class BankDAO implements IBankDAO {
 
 		
 		return transactionList;
-	}
-	
-	public void insertTransaction() {
-		// TODO
 	}
 	
 	public void approveAccount(int accountNum) {

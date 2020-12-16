@@ -23,14 +23,11 @@ public class BankService implements IBankService {
 		this.bd.createOne(user, initialBalance);
 	}
 
-	public void viewAccountBalance() {
-		return;
-	}
-
 	public void depositOrWithdraw(Account account, Double amount, String operation) {
 		if(operation.equals("deposit")) {
 			Double newBalance = account.getBalance() + amount;
 			this.bd.updateBalance(account, newBalance, operation, amount);
+			return;
 		} else if(operation.equals("withdraw")) {
 			Double newBalance = account.getBalance() - amount;
 			this.bd.updateBalance(account, newBalance, operation, amount);
@@ -41,10 +38,6 @@ public class BankService implements IBankService {
 
 	public List<Account> getAllUsersAccounts(User user) {
 		this.accounts = this.bd.getAllUserAccounts(user);
-		return this.accounts;
-	}
-	
-	public List<Account> getAllUsersAccounts() {
 		return this.accounts;
 	}
 	
@@ -78,6 +71,15 @@ public class BankService implements IBankService {
 	public boolean acceptTransfer(Account account, Transfer transfer) {
 		boolean isTransferSuccessful = this.bd.acceptTransfer(account, transfer);
 		return isTransferSuccessful;
+	}
+	
+	public boolean isValidAccountNumber(int accountNum) {
+		Account account = this.bd.getOne(accountNum);
+		if(account != null) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 

@@ -20,6 +20,7 @@ public class UserService implements IUserService {
 		this.em = null;
 	}
 
+	// This is the method in which the j unit test was written for 
 	public User login(String username, String password) {
 		User loggedInUser = null;
 		try {
@@ -71,10 +72,6 @@ public class UserService implements IUserService {
 		}
 	}
 	
-	public User getCurrentUser() {
-		return this.user;
-	}
-
 	public boolean isValidUsername(String username) {
 		User foundUser = this.ud.getOneUserByUsername(username);
 		if(foundUser == null) {
@@ -83,4 +80,14 @@ public class UserService implements IUserService {
 			return false;
 		}
 	}
+	
+	public User getCurrentUser() {
+		return this.user;
+	}
+	
+	public void setCurrentUser(User user) {
+		this.user = user;
+	}
+
+	
 }
